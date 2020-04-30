@@ -1,0 +1,187 @@
+{
+	"name": "web-assets-compiler",
+	"displayName": "Web assets compiler",
+	"description": "SASS, Less compiler",
+	"author": {
+		"name": "Kien NP",
+		"email": "kien.nguyenphi@gmail.com"
+	},
+	"publisher": "kiennp",
+	"license": "MIT",
+	"version": "0.0.1",
+	"repository": {
+		"type": "git"
+	},
+	"engines": {
+		"vscode": "^1.44.0"
+	},
+	"keywords": [
+		"web",
+		"sass",
+		"scss",
+		"compiler",
+		"transpiler",
+		"sass compiler",
+		"scss compiler"
+	],
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"workspaceContains:**/*.s[ac]ss",
+		"onLanguage:scss",
+		"onLanguage:sass",
+		"onCommand:webAssetsCompiler.compileThis",
+		"onCommand:webAssetsCompiler.compileAll"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "webAssetsCompiler.compileThis",
+				"title": "Web assets compiler: Compile This File"
+			},
+			{
+				"command": "webAssetsCompiler.compileAll",
+				"title": "Web assets compiler: Compile All"
+			}
+		],
+		"configuration": {
+			"title": "Web assets compiler",
+			"properties": {
+				"webAssetsCompiler.compileOnSave": {
+					"scope": "resource",
+					"description": "Enable compile on save",
+					"type": "boolean",
+					"default": false
+				},
+				"webAssetsCompiler.exportFormats": {
+					"scope": "resource",
+					"description": "Export format list",
+					"type": "array",
+					"items": {
+						"type": "object",
+						"required": [
+							"format"
+						],
+						"properties": {
+							"format": {
+								"description": "Format of output file",
+								"type": "string",
+								"default": "",
+								"enum": [
+									"expanded",
+									"compressed"
+								]
+							},
+							"extension": {
+								"description": "Output file extension",
+								"type": "string",
+								"default": ""
+							},
+							"sourceMap": {
+								"description": "Export source map or not",
+								"type": "boolean",
+								"default": true
+							}
+						}
+					}
+				},
+				"webAssetsCompiler.targetFolders": {
+					"scope": "resource",
+					"description": "Watching folders",
+					"type": "array",
+					"items": {
+						"type": "object",
+						"required": [
+							"input"
+						],
+						"properties": {
+							"input": {
+								"description": "Watching folder path (relative path from work folder)",
+								"type": "string",
+								"default": ""
+							},
+							"output": {
+								"description": "Compile output folder path (relative path from work folder)\nCompiled file will be exported to input folder if this value isn't set",
+								"type": "string",
+								"default": ""
+							},
+							"includePattern": {
+								"description": "Included files (defined by regular expression)",
+								"type": "string",
+								"default": ""
+							},
+							"excludePattern": {
+								"description": "Excluded files (defined by regular expression)",
+								"type": "string",
+								"default": ""
+							},
+							"formats": {
+								"scope": "resource",
+								"description": "Export format list",
+								"type": "array",
+								"items": {
+									"type": "object",
+									"required": [
+										"format"
+									],
+									"properties": {
+										"format": {
+											"description": "Format of output file",
+											"type": "string",
+											"default": "",
+											"enum": [
+												"expanded",
+												"compressed"
+											]
+										},
+										"extension": {
+											"description": "Output file extension",
+											"type": "string",
+											"default": ""
+										},
+										"sourceMap": {
+											"description": "Export source map or not",
+											"type": "boolean",
+											"default": true
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"lint": "eslint src --ext ts",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile && npm run lint",
+		"test": "node ./out/test/runTest.js"
+	},
+	"dependencies": {
+		"autoprefixer": "^9.7.6",
+		"sass": "^1.26.5"
+	},
+	"devDependencies": {
+		"@types/autoprefixer": "^9.7.2",
+		"@types/glob": "^7.1.1",
+		"@types/mocha": "^7.0.2",
+		"@types/node": "^13.13.5",
+		"@types/sass": "^1.16.0",
+		"@types/uuid": "^7.0.3",
+		"@types/vscode": "^1.44.0",
+		"@typescript-eslint/eslint-plugin": "^2.31.0",
+		"@typescript-eslint/parser": "^2.31.0",
+		"eslint": "^6.8.0",
+		"glob": "^7.1.6",
+		"mocha": "^7.1.1",
+		"typescript": "^3.8.3",
+		"uuid": "^8.0.0",
+		"vscode-test": "^1.3.0"
+	}
+}
