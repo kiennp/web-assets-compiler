@@ -101,7 +101,7 @@ export class Settings {
 	 * @param workFolder Work folder path
 	 */
 	public static getExportFormats(workFolder?: string): ExportFormat[] {
-		const value = this.getConfig<ExportFormat[]>(workFolder, 'exportExpanded', []);
+		const value = this.getConfig<ExportFormat[]>(workFolder, 'exportFormats', []);
 		for (let i = 0; i < value.length; i++) {
 			const format = value[i];
 			value[i].style = 'expanded';

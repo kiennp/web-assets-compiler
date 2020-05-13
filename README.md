@@ -48,13 +48,16 @@ All changed in VS Code configurations will be reflected in `.webassetcompiler.js
             // output folder, relative path from work folder
             "output": "",
             // file name regex of include list
-            // include all files if this value not set
+            // include all files if this value isn't set
             "includePattern": "",
             // file name regex of exclude list
-            // no file is excluded if this value not set
+            // no file is excluded if this value isn't set
             "excludePattern": "",
+            // type of input file, SASS/SCSS
+            // file extension will be used to check language name if this value isn't set
+            "languageName": "",
             // same as `webAssetsCompiler.exportFormats`
-            // `webAssetsCompiler.exportFormats` will be used if this value wasn't set
+            // `webAssetsCompiler.exportFormats` will be used if this value isn't set
             "formats": [
                 {
                     "format": "expanded",

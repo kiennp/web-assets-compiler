@@ -1,7 +1,7 @@
 {
 	"name": "web-assets-compiler",
 	"displayName": "Web assets compiler",
-	"description": "SASS, Less compiler",
+	"description": "SASS compiler",
 	"author": {
 		"name": "Kien NP",
 		"email": "kien.nguyenphi@gmail.com"
@@ -9,8 +9,10 @@
 	"publisher": "kiennp",
 	"license": "MIT",
 	"version": "0.0.1",
+	"homepage": "https://github.com/kiennp/web-assets-compiler#readme",
 	"repository": {
-		"type": "git"
+		"type": "git",
+		"url": "https://github.com/kiennp/web-assets-compiler.git"
 	},
 	"engines": {
 		"vscode": "^1.44.0"
@@ -116,6 +118,14 @@
 								"description": "Excluded files (defined by regular expression)",
 								"type": "string",
 								"default": ""
+							},
+							"languageName": {
+								"description": "Type of input file",
+								"type": "string",
+								"enum": [
+									"SASS",
+									"SCSS"
+								]
 							},
 							"formats": {
 								"scope": "resource",

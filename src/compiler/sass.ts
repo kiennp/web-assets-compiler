@@ -7,8 +7,8 @@ import { ICompiler, FileInfo } from "../compiler";
 import { Output } from "../output";
 
 export class SASSCompiler implements ICompiler {
-	private indentedSyntax?: boolean;
-	public constructor(indentedSyntax?: boolean) {
+	private indentedSyntax: boolean;
+	public constructor(indentedSyntax: boolean = false) {
 		this.indentedSyntax = indentedSyntax;
 	}
 	public compile(file: FileInfo): boolean {

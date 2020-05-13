@@ -321,7 +321,7 @@ export class Compiler {
 						let compilerInstance: ICompiler | undefined = undefined;
 						switch (f.type) {
 							case AssetType.SASS:
-								compilerInstance = new SASSCompiler();
+								compilerInstance = new SASSCompiler(true);
 								break;
 							case AssetType.SCSS:
 								compilerInstance = new SASSCompiler();
