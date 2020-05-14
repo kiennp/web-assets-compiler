@@ -21,7 +21,7 @@ export class FileInfo {
 	public dst: string;
 	public type: AssetType;
 	public formats: ExportFormat[];
-	private lastCompile?: Date;
+	private lastCompile?: number;
 
 	public constructor(filepath: string, containerFolder?: TargetFolder) {
 		if (!containerFolder) {
@@ -65,8 +65,8 @@ export class FileInfo {
 	/**
 	 * Get last modified time of file
 	 */
-	private getLastModified(): Date {
-		return fs.statSync(this.src).mtime;
+	private getLastModified(): number {
+		return fs.statSync(this.src).mtime.getTime();
 	}
 
 	/**
@@ -89,17 +89,26 @@ type FileList = { [id: string]: FileInfo };
 class TargetFolder {
 	public input: string;
 	public output: string;
+	private includeSubFolder?: boolean;
 	private includePattern?: RegExp;
 	private excludePattern?: RegExp;
+	private languageName?: string;
 	public type?: AssetType;
 	public formats: ExportFormat[];
 	public files: FileList;
 
-	public constructor(cfg: TargetConfig) {
+	private container?: Compiler;
+	public workFolder: string;
+
+	public constructor(cfg: TargetConfig, workFolder?: string, cpl?: Compiler) {
+		this.container = cpl;
+		this.workFolder = workFolder || '';
 		this.input = cfg.input || '';
 		this.output = cfg.output || '';
+		this.includeSubFolder = cfg.includeSubFolder;
 		this.includePattern = this.parseRegex(cfg.includePattern);
 		this.excludePattern = this.parseRegex(cfg.excludePattern);
+		this.languageName = cfg.languageName;
 		if (cfg.languageName) {
 			switch (cfg.languageName.toUpperCase()) {
 				case 'SASS':
@@ -143,10 +152,21 @@ class TargetFolder {
 					Output.write('  Exclude: ' + this.excludePattern);
 				}
 				fs.readdirSync(this.input).forEach((filename) => {
-					if ((!this.includePattern || filename.match(this.includePattern)) && (!this.excludePattern || !filename.match(this.excludePattern))) {
-						Output.write('- Hit! ' + filename);
-						const filepath = path.join(this.input, filename);
-						this.files[filepath] = new FileInfo(filepath, this);
+					const filepath = path.join(this.input, filename);
+					const fStats = fs.lstatSync(filepath);
+					if (fStats.isDirectory()) {
+						if (this.isValidSubFolder(filename)) {
+							const target = this.cloneToSubFolder(filename);
+							this.container?.addInputFolder(target);
+						}
+					} else if (fStats.isFile()) {
+						if (this.isValidFile(filename)) {
+							let info = new FileInfo(filepath, this);
+							if (info.type !== AssetType.UNKNOWN) {
+								this.files[filepath] = info;
+								Output.write('- Hit! ' + filename);
+							}
+						}
 					}
 				});
 			} else {
@@ -156,12 +176,59 @@ class TargetFolder {
 	}
 
 	/**
+	 * Is valid sub folder
+	 * @param folderName Folder name to check
+	 */
+	private isValidSubFolder(folderName: string): boolean {
+		if (this.includeSubFolder) {
+			if (folderName === '.' || folderName === '..') {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Is valid file
+	 * @param filename Filename to check
+	 */
+	private isValidFile(filename: string): boolean {
+		if (this.includePattern) {
+			if (!filename.match(this.includePattern)) {
+				return false;
+			}
+		}
+		if (this.excludePattern) {
+			if (filename.match(this.excludePattern)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
 	 * Clear files list
 	 */
 	public clear() {
 		for (const key in this.files) {
 			delete this.files[key];
 		}
+	}
+
+	/**
+	 * Clone an object to watch sub folder
+	 * @param subFolderName Sub folder name
+	 */
+	private cloneToSubFolder(subFolderName: string): TargetFolder {
+		return new TargetFolder({
+			input: path.join(this.input, subFolderName),
+			output: this.output ? path.join(this.output, subFolderName) : '',
+			includeSubFolder: this.includeSubFolder,
+			includePattern: this.includePattern?.source,
+			excludePattern: this.excludePattern?.source,
+			languageName: this.languageName,
+			formats: this.formats,
+		}, this.workFolder, this.container);
 	}
 }
 
@@ -204,7 +271,7 @@ export class Compiler {
 	public async refreshTargetFiles(files: vscode.Uri[]) {
 		let updatedConfig: string[] = [];
 		let updatedFolder: { [id: string]: string[] } = {};
-		for (var i = 0; i < files.length; i++) {
+		for (let i = 0; i < files.length; i++) {
 			const filepath = files[i].fsPath;
 			const workFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(filepath))?.uri.fsPath;
 			if (workFolder) {
@@ -249,10 +316,10 @@ export class Compiler {
 	/**
 	 * Process when configurations was updated
 	 */
-	public async refreshSettings() {
+	public async refreshSettings(createConfigFile: boolean = false) {
 		if (vscode.workspace.workspaceFolders) {
 			vscode.workspace.workspaceFolders.forEach((folder) => {
-				Settings.overwriteConfigFile(folder.uri.fsPath);
+				Settings.overwriteConfigFile(folder.uri.fsPath, createConfigFile);
 				this.loadFromWorkFolder(folder.uri.fsPath);
 			});
 		}
@@ -375,7 +442,7 @@ export class Compiler {
 			// Load watching folder list
 			Settings.getTargetFolders(workFolder).forEach((cfg) => {
 				Output.write('Watching folder: ' + cfg.input);
-				let target = new TargetFolder(cfg);
+				let target = new TargetFolder(cfg, workFolder, this);
 				target.input = path.join(workFolder, target.input);
 				if (target.output && target.output !== '') {
 					target.output = path.join(workFolder, target.output);
@@ -383,14 +450,24 @@ export class Compiler {
 				if (cfg.formats === undefined || cfg.formats.length <= 0) {
 					target.formats = this.workFolderCfg[workFolder].formats;
 				}
-				this.workFolderCfg[workFolder].targetFolders.push(target);
-				this.inputFolders[target.input] = {
-					workFolder: workFolder,
-					targetIndex: this.workFolderCfg[workFolder].targetFolders.length - 1,
-				};
-				target.searchFiles();
+				this.addInputFolder(target);
 			});
 		});
+	}
+	/**
+	 * Add folder to watching list
+	 * @param target Target folder
+	 */
+	public addInputFolder(target: TargetFolder) {
+		const workFolder = target.workFolder;
+		if (this.workFolderCfg.hasOwnProperty(workFolder) && !this.inputFolders.hasOwnProperty(target.input)) {
+			this.workFolderCfg[workFolder].targetFolders.push(target);
+			this.inputFolders[target.input] = {
+				workFolder: workFolder,
+				targetIndex: this.workFolderCfg[workFolder].targetFolders.length - 1,
+			};
+			target.searchFiles();
+		}
 	}
 
 	/**

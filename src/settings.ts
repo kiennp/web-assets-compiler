@@ -17,6 +17,7 @@ export type ExportFormat = {
 export interface TargetConfig {
 	input?: string,
 	output?: string,
+	includeSubFolder?: boolean,
 	includePattern?: string,
 	excludePattern?: string,
 	languageName?: string,
@@ -43,7 +44,7 @@ export class Settings {
 				const cfgStr = fs.readFileSync(cfgFile).toString();
 				const cfgObj = JSON.parse(cfgStr);
 				if (typeof cfgObj === 'object') {
-					var settings = this.getWorkspaceConfig(workFolder);
+					let settings = this.getWorkspaceConfig(workFolder);
 					for (const key in cfgObj) {
 						settings.update(key, cfgObj[key]).then(() => { }, (failed) => {
 							Output.write(failed);
@@ -57,11 +58,12 @@ export class Settings {
 	/**
 	 * Overwrite config file
 	 * @param workFolder Work folder path
+	 * @param createIfNotExists Create file if not exists
 	 */
-	public static overwriteConfigFile(workFolder: string) {
+	public static overwriteConfigFile(workFolder: string, createIfNotExists: boolean = false) {
 		Task.run(() => {
 			const cfgFile = path.join(workFolder, CONFIG_FILE_NAME);
-			if (fs.existsSync(cfgFile)) {
+			if (createIfNotExists || fs.existsSync(cfgFile)) {
 				fs.writeFileSync(cfgFile, JSON.stringify(this.getWorkspaceConfig(workFolder), null, "\t"));
 			}
 		});

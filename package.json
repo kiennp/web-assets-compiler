@@ -1,14 +1,14 @@
 {
 	"name": "web-assets-compiler",
 	"displayName": "Web assets compiler",
-	"description": "SASS compiler",
+	"description": "SASS/SCSS compiler",
 	"author": {
 		"name": "Kien NP",
 		"email": "kien.nguyenphi@gmail.com"
 	},
 	"publisher": "kiennp",
 	"license": "MIT",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"homepage": "https://github.com/kiennp/web-assets-compiler#readme",
 	"repository": {
 		"type": "git",
@@ -21,6 +21,7 @@
 		"web",
 		"sass",
 		"scss",
+		"compile",
 		"compiler",
 		"transpiler",
 		"sass compiler",
@@ -34,7 +35,8 @@
 		"onLanguage:scss",
 		"onLanguage:sass",
 		"onCommand:webAssetsCompiler.compileThis",
-		"onCommand:webAssetsCompiler.compileAll"
+		"onCommand:webAssetsCompiler.compileAll",
+		"onCommand:webAssetsCompiler.generateConfigFile"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -46,6 +48,10 @@
 			{
 				"command": "webAssetsCompiler.compileAll",
 				"title": "Web assets compiler: Compile All"
+			},
+			{
+				"command": "webAssetsCompiler.generateConfigFile",
+				"title": "Web assets compiler: Generate config file"
 			}
 		],
 		"configuration": {
@@ -55,7 +61,7 @@
 					"scope": "resource",
 					"description": "Enable compile on save",
 					"type": "boolean",
-					"default": false
+					"default": true
 				},
 				"webAssetsCompiler.exportFormats": {
 					"scope": "resource",
@@ -77,17 +83,23 @@
 								]
 							},
 							"extension": {
-								"description": "Output file extension",
+								"description": "Output file extension (without dot)",
 								"type": "string",
 								"default": ""
 							},
 							"sourceMap": {
 								"description": "Export source map or not",
 								"type": "boolean",
-								"default": true
+								"default": false
 							}
 						}
-					}
+					},
+					"default": [
+						{
+							"format": "expanded",
+							"sourceMap": false
+						}
+					]
 				},
 				"webAssetsCompiler.targetFolders": {
 					"scope": "resource",
@@ -109,15 +121,26 @@
 								"type": "string",
 								"default": ""
 							},
+							"includeSubFolder": {
+								"description": "Watching sub folder or not",
+								"type": "boolean",
+								"default": true
+							},
 							"includePattern": {
 								"description": "Included files (defined by regular expression)",
 								"type": "string",
-								"default": ""
+								"default": "",
+								"examples": [
+									"^.+\\.s[ac]ss$"
+								]
 							},
 							"excludePattern": {
 								"description": "Excluded files (defined by regular expression)",
 								"type": "string",
-								"default": ""
+								"default": "",
+								"examples": [
+									"^_.*$"
+								]
 							},
 							"languageName": {
 								"description": "Type of input file",
@@ -128,9 +151,9 @@
 								]
 							},
 							"formats": {
-								"scope": "resource",
 								"description": "Export format list",
 								"type": "array",
+								"minItems": 1,
 								"items": {
 									"type": "object",
 									"required": [
@@ -147,20 +170,31 @@
 											]
 										},
 										"extension": {
-											"description": "Output file extension",
+											"description": "Output file extension (without dot)",
 											"type": "string",
 											"default": ""
 										},
 										"sourceMap": {
 											"description": "Export source map or not",
 											"type": "boolean",
-											"default": true
+											"default": false
 										}
 									}
-								}
+								},
+								"default": [
+									{
+										"format": "expanded",
+										"sourceMap": false
+									}
+								]
 							}
 						}
-					}
+					},
+					"default": [
+						{
+							"input": ""
+						}
+					]
 				}
 			}
 		}

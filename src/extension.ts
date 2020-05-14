@@ -24,12 +24,16 @@ export function activate(context: vscode.ExtensionContext) {
 		compiler.compileAll();
 	});
 
+	let disposableGenerateConfigFile = vscode.commands.registerCommand('webAssetsCompiler.generateConfigFile', () => {
+		compiler.refreshSettings(true);
+	});
+
 	let disposableOnChangeConfiguration = vscode.workspace.onDidChangeConfiguration(() => {
 		compiler.refreshSettings();
 	});
 
 	let disposableOnRename = vscode.workspace.onDidRenameFiles((e) => {
-		var files: vscode.Uri[] = [];
+		let files: vscode.Uri[] = [];
 		e.files.forEach((f) => {
 			files.push(f.oldUri);
 			files.push(f.newUri);
@@ -38,7 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	let disposableOnCreate = vscode.workspace.onDidCreateFiles((e) => {
-		var files: vscode.Uri[] = [];
+		let files: vscode.Uri[] = [];
 		e.files.forEach((fUri) => {
 			files.push(fUri);
 		});
@@ -46,7 +50,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	let disposableOnDelete = vscode.workspace.onDidDeleteFiles((e) => {
-		var files: vscode.Uri[] = [];
+		let files: vscode.Uri[] = [];
 		e.files.forEach((fUri) => {
 			files.push(fUri);
 		});
@@ -64,6 +68,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		disposableCompileThis,
 		disposableCompileAll,
+		disposableGenerateConfigFile,
 		disposableOnChangeConfiguration,
 		disposableOnRename,
 		disposableOnCreate,

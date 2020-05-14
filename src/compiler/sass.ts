@@ -25,6 +25,7 @@ export class SASSCompiler implements ICompiler {
 					outputStyle: options.style,
 					outFile: outFile,
 					sourceMap: options.exportMap,
+					omitSourceMapUrl: true,
 				});
 				const css = postcss([autoprefixer({
 					ignoreUnknownVersions: true,
@@ -32,6 +33,11 @@ export class SASSCompiler implements ICompiler {
 					from: file.src,
 					to: outFile,
 				});
+				// Create parent folder if not exists
+				const parentDir = path.dirname(outFile);
+				if (!fs.existsSync(parentDir)) {
+					fs.mkdirSync(parentDir, { recursive: true });
+				}
 				// Write css to file
 				fs.writeFileSync(outFile, css.css.toString());
 				if (outCSS.map && options.exportMap) {

@@ -19,30 +19,31 @@ A VSCode Extension that help you to compile SASS/SCSS files to CSS files.
 
 1. Open command by press `F1` or `Ctrl + Shift + P` (`Cmd + Shift + P` on MAC) and type `Web assets compiler: Compile This File` to compile opening file.
 1. Open command by press `F1` or `Ctrl + Shift + P` (`Cmd + Shift + P` on MAC) and type `Web assets compiler: Compile All` to start compiler.
+1. Open command by press `F1` or `Ctrl + Shift + P` (`Cmd + Shift + P` on MAC) and type `Web assets compiler: Generate config file` to save settings to config file in workspace root folder.
 
 ## Extension Settings
 
-You can use VS Code configurations or `.webassetcompiler.json` file at root of work folder.  
-`.webassetcompiler.json` will overwrites VS Code configurations  
-All changed in VS Code configurations will be reflected in `.webassetcompiler.json` if exists
+* You can use VS Code configurations or `.webassetcompiler.json` file at root of work folder.  
+* `.webassetcompiler.json` will overwrites VS Code configurations  
+* All changed in VS Code configurations will be reflected in `.webassetcompiler.json` if file is exists
 
 ### VSCode settings
 
 ```javascript
 {
     // enable/disable compile on save
-    // default is false
+    // default is true
     "webAssetsCompiler.compileOnSave": true,
     // export format list
     "webAssetsCompiler.exportFormats": [
         {
             // export style, expanded/compressed
-            "format": "",
-            // output file extension
+            "format": "expanded",
+            // output file extension (without dot)
             "extension": "",
             // enable/disable export source mapping
-            // default is true
-            "sourceMap": true
+            // default is false
+            "sourceMap": false
         }
     ],
     // list of watching folders
@@ -52,6 +53,9 @@ All changed in VS Code configurations will be reflected in `.webassetcompiler.js
             "input": "",
             // output folder, relative path from work folder
             "output": "",
+            // watching all sub folder or not
+            // default is true
+            "includeSubFolder": true,
             // file name regex of include list
             // include all files if this value isn't set
             "includePattern": "",
@@ -67,7 +71,7 @@ All changed in VS Code configurations will be reflected in `.webassetcompiler.js
                 {
                     "format": "expanded",
                     "extension": "",
-                    "sourceMap": true
+                    "sourceMap": false
                 }
             ],
         }
@@ -78,3 +82,8 @@ All changed in VS Code configurations will be reflected in `.webassetcompiler.js
 ### `.webassetcompiler.json` file
 
 Same as VS Code settings without `webAssetsCompiler` prefix
+
+## Autoprefixer settings
+
+Settings same as browserslist.  
+[Click here for more details](https://github.com/browserslist/browserslist#queries)
