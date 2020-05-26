@@ -87,10 +87,10 @@ Same as VS Code settings without `webAssetsCompiler` prefix
 
 ## Autoprefixer settings
 
-Settings same as browserslist.  
+Settings same as `browserslist`.  
 [Click here for more details](https://github.com/browserslist/browserslist#queries)
 
 ## SCSS/CSS/JS/HTML formatter settings
 
-Settings same as css formatter in `js-beautify`.  
+Using `.jsbeautifyrc` file for settings same as `js-beautify`.  
 [Click here for more details](https://github.com/beautify-web/js-beautify#loading-settings-from-environment-or-jsbeautifyrc-javascript-only)
