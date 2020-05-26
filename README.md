@@ -4,7 +4,7 @@ A VSCode Extension that help you to compile SASS/SCSS files to CSS files.
 
 [![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/kiennp.web-assets-compiler?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=kiennp.web-assets-compiler)
 [![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/kiennp.web-assets-compiler?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=kiennp.web-assets-compiler)
-[![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/d/kiennp.web-assets-compiler?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=kiennp.web-assets-compiler)
+[![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/kiennp.web-assets-compiler?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=kiennp.web-assets-compiler)
 [![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/kiennp.web-assets-compiler?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=kiennp.web-assets-compiler)
 [![GitHub](https://img.shields.io/github/license/kiennp/web-assets-compiler?style=flat-square)](https://github.com/kiennp/web-assets-compiler)
 
