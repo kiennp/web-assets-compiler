@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as formatter from './formatter';
 import { Compiler } from './compiler';
 import { Output } from './output';
 import { Settings } from './settings';
@@ -7,6 +8,28 @@ import { Settings } from './settings';
 export function activate(context: vscode.ExtensionContext) {
 
 	Output.write('Extension is now active!');
+
+	[
+		formatter.Language.SCSS,
+		formatter.Language.CSS,
+		formatter.Language.JS,
+		formatter.Language.HTML,
+	].forEach(language => {
+		let disposableFormatFile = vscode.languages.registerDocumentFormattingEditProvider({ language }, {
+			provideDocumentFormattingEdits: (document: vscode.TextDocument) => {
+				return formatter.Formatter.format(document);
+			}
+		});
+		let disposableFormatRange = vscode.languages.registerDocumentRangeFormattingEditProvider({ language }, {
+			provideDocumentRangeFormattingEdits: (document: vscode.TextDocument, range: vscode.Range) => {
+				return formatter.Formatter.format(document, range);
+			}
+		});
+		context.subscriptions.push(
+			disposableFormatFile,
+			disposableFormatRange,
+		);
+	});
 
 	let compiler = new Compiler();
 
@@ -75,7 +98,7 @@ export function activate(context: vscode.ExtensionContext) {
 		disposableOnDelete,
 		disposableOnSave,
 		disposableOnWorkFoldersChanged,
-		compiler
+		compiler,
 	);
 }
 

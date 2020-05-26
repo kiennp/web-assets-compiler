@@ -1,6 +1,9 @@
 import * as path from 'path';
 import * as Mocha from 'mocha';
 import * as glob from 'glob';
+import * as fs from 'fs';
+import * as uuid from 'uuid';
+import { tmpdir } from 'os';
 
 export function run(): Promise<void> {
 	// Create the mocha test
@@ -35,4 +38,10 @@ export function run(): Promise<void> {
 			}
 		});
 	});
+}
+
+export function writeTmpFile(data: string): string {
+	const tmpFile = path.join(tmpdir(), uuid.v4());
+	fs.writeFileSync(tmpFile, data);
+	return tmpFile;
 }

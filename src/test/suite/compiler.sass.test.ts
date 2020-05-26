@@ -1,15 +1,13 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
-import * as path from 'path';
 import * as fs from 'fs';
-import * as uuid from 'uuid';
-import { tmpdir } from 'os';
 import { AssetType, FileInfo } from '../../compiler';
 import { SASSCompiler } from '../../compiler/sass';
 import { ExportFormat } from '../../settings';
+import { writeTmpFile } from '.';
 
-suite('Extension Test Suite', () => {
-	vscode.window.showInformationMessage('Start all tests.');
+suite('SASS Compiler Test Suite', () => {
+	vscode.window.showInformationMessage('Start sass compiler tests.');
 
 	const testFormats: ExportFormat[] = [
 		{ style: 'expanded', exportMap: true },
@@ -20,8 +18,7 @@ suite('Extension Test Suite', () => {
 
 	const testCompile = (data: string, indent: boolean) => {
 		const compiler = new SASSCompiler(indent);
-		const tmpFile = path.join(tmpdir(), uuid.v4());
-		fs.writeFileSync(tmpFile, data);
+		const tmpFile = writeTmpFile(data);
 		const fileInfo = new FileInfo(tmpFile);
 		fileInfo.type = AssetType.SASS;
 		fileInfo.formats = testFormats;

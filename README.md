@@ -4,11 +4,13 @@ A VSCode Extension that help you to compile SASS/SCSS files to CSS files.
 
 [![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/kiennp.web-assets-compiler?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=kiennp.web-assets-compiler)
 [![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/kiennp.web-assets-compiler?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=kiennp.web-assets-compiler)
+[![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/d/kiennp.web-assets-compiler?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=kiennp.web-assets-compiler)
 [![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/kiennp.web-assets-compiler?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=kiennp.web-assets-compiler)
 [![GitHub](https://img.shields.io/github/license/kiennp/web-assets-compiler?style=flat-square)](https://github.com/kiennp/web-assets-compiler)
 
 ## Features
 
+* Use `js-beautify` as SCSS/CSS/JS/HTML formatter
 * Compile SASS/SCSS to CSS
 * Autoprefix support for CSS
 * Live compile when save file
@@ -87,3 +89,8 @@ Same as VS Code settings without `webAssetsCompiler` prefix
 
 Settings same as browserslist.  
 [Click here for more details](https://github.com/browserslist/browserslist#queries)
+
+## SCSS/CSS/JS/HTML formatter settings
+
+Settings same as css formatter in `js-beautify`.  
+[Click here for more details](https://github.com/beautify-web/js-beautify#loading-settings-from-environment-or-jsbeautifyrc-javascript-only)
