@@ -28,7 +28,9 @@
 		"compiler",
 		"transpiler",
 		"format",
-		"formatter"
+		"formatter",
+		"autoprefix",
+		"js beautify"
 	],
 	"categories": [
 		"Programming Languages",
