@@ -11,6 +11,9 @@ export class Output {
 	public static write(msg: string) {
 		this.outChannel.appendLine(msg);
 	}
+	public static show() {
+		this.outChannel.show();
+	}
 	static dispose() {
 		this.outChannel.dispose();
 	}

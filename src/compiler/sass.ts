@@ -50,6 +50,7 @@ export class SASSCompiler implements ICompiler {
 				Output.write(`SASS compiled: ${file.src} => ${outFile}`);
 			});
 		} catch (err) {
+			Output.show();
 			Output.write(err.message);
 			return false;
 		}

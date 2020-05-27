@@ -1,5 +1,8 @@
 # Change log
 
+## 1.0.3
+> Show output window when error
+
 ## 1.0.2
 > Use `js-beautify` options for formatter
 
