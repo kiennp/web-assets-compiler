@@ -13,7 +13,7 @@ A VSCode Extension that help you to compile SASS/SCSS files to CSS files.
 * Use `js-beautify` as SCSS/CSS/JS/HTML formatter
 * Compile SASS/SCSS to CSS
 * Autoprefix support for CSS
-* Live compile when save file
+* Live compile when save file or partial files
 * Customize format of export files
 * Customize compile options for a file/folder
 
@@ -94,3 +94,5 @@ Settings same as `browserslist`.
 
 Using `.jsbeautifyrc` file for settings same as `js-beautify`.  
 [Click here for more details](https://github.com/beautify-web/js-beautify#loading-settings-from-environment-or-jsbeautifyrc-javascript-only)
+
+_* `SCSS` will use all settings for `CSS`_

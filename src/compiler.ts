@@ -6,8 +6,20 @@ import { Settings, ExportFormat, TargetConfig } from './settings';
 import { Task } from './task';
 import { SASSCompiler } from './compiler/sass';
 
+export type CompilerResult = {
+	isSuccess: boolean,
+	relatedFiles: string[],
+};
+
 export type ICompiler = {
-	compile: (file: FileInfo) => boolean,
+	/**
+	 * Compile a file
+	 */
+	compile: (file: FileInfo) => CompilerResult,
+	/**
+	 * Get related files
+	 */
+	getRelated: (filePath: string) => string[],
 };
 
 export enum AssetType {
@@ -22,6 +34,7 @@ export class FileInfo {
 	public type: AssetType;
 	public formats: ExportFormat[];
 	private lastCompile?: number;
+	private relatedLastModified: number;
 
 	public constructor(filepath: string, containerFolder?: TargetFolder) {
 		if (!containerFolder) {
@@ -38,13 +51,14 @@ export class FileInfo {
 		this.dst = path.join(containerFolder.output || containerFolder.input, this.getFileNameWithoutExtension(filepath));
 		this.type = containerFolder.type || this.getFileType(filepath);
 		this.formats = containerFolder.formats;
+		this.relatedLastModified = 0;
 	}
 
 	/**
 	 * Is file compilable
 	 */
 	public get isCompilable(): boolean {
-		return !this.lastCompile || this.lastCompile < this.getLastModified();
+		return !this.lastCompile || this.lastCompile < this.getLastModified() || this.lastCompile < this.relatedLastModified;
 	}
 
 	/**
@@ -52,6 +66,7 @@ export class FileInfo {
 	 */
 	public updateLastCompile() {
 		this.lastCompile = this.getLastModified();
+		this.relatedLastModified = 0;
 	}
 
 	/**
@@ -63,10 +78,26 @@ export class FileInfo {
 	}
 
 	/**
-	 * Get last modified time of file
+	 * Get last modified time of source file
 	 */
 	private getLastModified(): number {
-		return fs.statSync(this.src).mtime.getTime();
+		return this.getFileModifiedTime(this.src);
+	}
+
+	/**
+	 * Set related files modified time
+	 * @param filePath File path
+	 */
+	public setRelatedModified(filePath: string) {
+		this.relatedLastModified = this.getFileModifiedTime(filePath);
+	}
+
+	/**
+	 * Get last modified time of file
+	 * @param filePath File path
+	 */
+	private getFileModifiedTime(filePath: string): number {
+		return fs.statSync(filePath).mtime.getTime();
 	}
 
 	/**
@@ -144,12 +175,12 @@ class TargetFolder {
 		this.clear();
 		Task.run(() => {
 			if (fs.existsSync(this.input)) {
-				Output.write('Search files: ' + this.input);
+				Output.write(`Search files: ${this.input}`);
 				if (this.includePattern) {
-					Output.write('  Include: ' + this.includePattern);
+					Output.write(`  Include: ${this.includePattern}`);
 				}
 				if (this.excludePattern) {
-					Output.write('  Exclude: ' + this.excludePattern);
+					Output.write(`  Exclude: ${this.excludePattern}`);
 				}
 				fs.readdirSync(this.input).forEach((filename) => {
 					const filepath = path.join(this.input, filename);
@@ -164,13 +195,20 @@ class TargetFolder {
 							let info = new FileInfo(filepath, this);
 							if (info.type !== AssetType.UNKNOWN) {
 								this.files[filepath] = info;
-								Output.write('- Hit! ' + filename);
+								Output.write(`- Hit! ${filename}`);
+								// Add related files to watching list
+								if (this.container) {
+									const compilerInstance = Compiler.getCompiler(info.type);
+									if (compilerInstance) {
+										this.container.updateRelatedFiles(info, compilerInstance.getRelated(filepath));
+									}
+								}
 							}
 						}
 					}
 				});
 			} else {
-				Output.write('Not exists: ' + this.input);
+				Output.write(`Not exists: ${this.input}`);
 			}
 		});
 	}
@@ -181,11 +219,11 @@ class TargetFolder {
 	 */
 	private isValidSubFolder(folderName: string): boolean {
 		if (this.includeSubFolder) {
-			if (folderName === '.' || folderName === '..') {
-				return false;
+			if (folderName !== '.' && folderName !== '..') {
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 
 	/**
@@ -242,10 +280,14 @@ export class Compiler {
 
 	private inputFolders: { [id: string]: { workFolder: string, targetIndex: number } };
 	private workFolderCfg: { [id: string]: CompileConfig };
+	private relatedFiles: { [id: string]: string[] };
+	private watchingRelated: { [id: string]: FileList };
 
 	public constructor() {
 		this.inputFolders = {};
 		this.workFolderCfg = {};
+		this.relatedFiles = {};
+		this.watchingRelated = {};
 		this.refreshSettings();
 	}
 
@@ -350,16 +392,25 @@ export class Compiler {
 			return;
 		}
 		let lst: FileList = {};
-		if (this.inputFolders.hasOwnProperty(parentDir)) {
-			const workFolder = this.inputFolders[parentDir].workFolder;
-			const targetIdx = this.inputFolders[parentDir].targetIndex;
-			if (this.workFolderCfg.hasOwnProperty(workFolder) && (!isOnSave || this.workFolderCfg[workFolder].compileOnSave) && targetIdx < this.workFolderCfg[workFolder].targetFolders.length) {
-				if (this.workFolderCfg[workFolder].targetFolders[targetIdx].files.hasOwnProperty(currentFile)) {
-					lst[currentFile] = this.workFolderCfg[workFolder].targetFolders[targetIdx].files[currentFile];
+		if (vscode.workspace.getWorkspaceFolder(txtDoc.uri)) {
+			if (this.inputFolders.hasOwnProperty(parentDir)) {
+				const workFolder = this.inputFolders[parentDir].workFolder;
+				const targetIdx = this.inputFolders[parentDir].targetIndex;
+				if (this.workFolderCfg.hasOwnProperty(workFolder) && (!isOnSave || this.workFolderCfg[workFolder].compileOnSave) && targetIdx < this.workFolderCfg[workFolder].targetFolders.length) {
+					if (this.workFolderCfg[workFolder].targetFolders[targetIdx].files.hasOwnProperty(currentFile)) {
+						lst[currentFile] = this.workFolderCfg[workFolder].targetFolders[targetIdx].files[currentFile];
+					}
+				}
+			}
+			// Compile related files
+			if (this.watchingRelated.hasOwnProperty(currentFile)) {
+				for (const relatedPath in this.watchingRelated[currentFile]) {
+					lst[relatedPath] = this.watchingRelated[currentFile][relatedPath];
+					lst[relatedPath].setRelatedModified(currentFile);
 				}
 			}
 		} else {
-			if (!lst.hasOwnProperty(currentFile) && (!isOnSave || Settings.isCompileOnSave())) {
+			if (!isOnSave || Settings.isCompileOnSave()) {
 				lst[currentFile] = new FileInfo(currentFile);
 			}
 		}
@@ -385,26 +436,34 @@ export class Compiler {
 				const f = files[key];
 				Task.run(() => {
 					if (f.isCompilable) {
-						let compilerInstance: ICompiler | undefined = undefined;
-						switch (f.type) {
-							case AssetType.SASS:
-								compilerInstance = new SASSCompiler(true);
-								break;
-							case AssetType.SCSS:
-								compilerInstance = new SASSCompiler();
-								break;
-							default:
-								Output.write("File type isn't supported: " + f.src);
-								break;
-						}
-						if (compilerInstance && compilerInstance.compile(f)) {
-							f.updateLastCompile();
+						const compilerInstance = Compiler.getCompiler(f.type);
+						if (compilerInstance) {
+							const res = compilerInstance.compile(f);
+							if (res.isSuccess) {
+								f.updateLastCompile();
+								this.updateRelatedFiles(f, res.relatedFiles);
+							}
+						} else {
+							Output.write(`File type isn't supported: ${f.src}`);
 						}
 					} else {
-						Output.write("No changed from last compiled: " + f.src);
+						Output.write(`No changed from last compiled: ${f.src}`);
 					}
 				});
 			}
+		}
+	}
+
+	/**
+	 * Get compiler
+	 * @param fileType File type
+	 */
+	public static getCompiler(fileType: AssetType): ICompiler | undefined {
+		switch (fileType) {
+			case AssetType.SASS:
+				return new SASSCompiler(true);
+			case AssetType.SCSS:
+				return new SASSCompiler();
 		}
 	}
 
@@ -416,6 +475,11 @@ export class Compiler {
 		if (this.workFolderCfg.hasOwnProperty(workFolder)) {
 			// Delete old settings
 			this.workFolderCfg[workFolder].targetFolders.forEach((folder) => {
+				// Clear related files
+				for (const file in folder.files) {
+					this.updateRelatedFiles(folder.files[file], []);
+				}
+				// Remove from watching list
 				folder.clear();
 				if (this.inputFolders.hasOwnProperty(folder.input)) {
 					delete this.inputFolders[folder.input];
@@ -433,7 +497,7 @@ export class Compiler {
 		this.removeWorkFolder(workFolder);
 		// Load settings
 		Task.run(() => {
-			Output.write('Load workspace settings: ' + workFolder);
+			Output.write(`Load workspace settings: ${workFolder}`);
 			this.workFolderCfg[workFolder] = {
 				compileOnSave: Settings.isCompileOnSave(workFolder),
 				formats: Settings.getExportFormats(workFolder),
@@ -441,7 +505,7 @@ export class Compiler {
 			};
 			// Load watching folder list
 			Settings.getTargetFolders(workFolder).forEach((cfg) => {
-				Output.write('Watching folder: ' + cfg.input);
+				Output.write(`Watching folder: ${cfg.input}`);
 				let target = new TargetFolder(cfg, workFolder, this);
 				target.input = path.join(workFolder, target.input);
 				if (target.output && target.output !== '') {
@@ -454,6 +518,7 @@ export class Compiler {
 			});
 		});
 	}
+
 	/**
 	 * Add folder to watching list
 	 * @param target Target folder
@@ -468,6 +533,36 @@ export class Compiler {
 			};
 			target.searchFiles();
 		}
+	}
+
+	/**
+	 * Add related files to watching list
+	 * @param fileInfo File info
+	 * @param relatedList List of related files
+	 */
+	public updateRelatedFiles(fileInfo: FileInfo, relatedList: string[]) {
+		const filePath = fileInfo.src;
+		Output.write(`- Update related list: ${filePath}`);
+		// Clear old list
+		if (this.relatedFiles.hasOwnProperty(filePath)) {
+			this.relatedFiles[filePath].forEach(related => {
+				if (this.watchingRelated.hasOwnProperty(related)) {
+					if (this.watchingRelated[related].hasOwnProperty(filePath)) {
+						delete this.watchingRelated[related][filePath];
+					}
+				}
+			});
+		}
+		// Set new list
+		this.relatedFiles[filePath] = relatedList;
+		relatedList.forEach(related => {
+			if (!this.watchingRelated.hasOwnProperty(related)) {
+				this.watchingRelated[related] = {};
+			}
+			if (!this.watchingRelated[related].hasOwnProperty(filePath)) {
+				this.watchingRelated[related][filePath] = fileInfo;
+			}
+		});
 	}
 
 	/**
