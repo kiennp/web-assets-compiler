@@ -44,7 +44,7 @@ export class SASSCompiler implements ICompiler {
 				if (outCSS.map) {
 					const mapString = outCSS.map.toString();
 					const mapObj = JSON.parse(mapString);
-					sourceFiles = this.getSourceFilePaths(file.src, mapObj.sources);
+					sourceFiles = this.getSourceFilePaths(outFile, mapObj.sources, file.src);
 					// Write source map
 					if (options.exportMap) {
 						const mapPath = `${outFile}.map`;
@@ -77,12 +77,13 @@ export class SASSCompiler implements ICompiler {
 		}
 		return [];
 	}
-	private getSourceFilePaths(filePath: string, mapSources: string[]): string[] {
+	private getSourceFilePaths(filePath: string, mapSources: string[], mainSourcePath?: string): string[] {
 		const parentDir = path.dirname(filePath);
+		const excludeSrc = mainSourcePath || filePath;
 		let result: string[] = [];
 		mapSources.forEach(relPath => {
 			const absPath = path.normalize(path.join(parentDir, relPath));
-			if (absPath !== filePath) {
+			if (absPath !== excludeSrc) {
 				result.push(absPath);
 			}
 		});

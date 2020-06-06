@@ -8,7 +8,7 @@
 	},
 	"publisher": "kiennp",
 	"license": "MIT",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"homepage": "https://github.com/kiennp/web-assets-compiler#readme",
 	"repository": {
 		"type": "git",
@@ -46,7 +46,7 @@
 		"onCommand:webAssetsCompiler.compileAll",
 		"onCommand:webAssetsCompiler.generateConfigFile"
 	],
-	"main": "./out/extension.js",
+	"main": "./dist/extension.js",
 	"contributes": {
 		"commands": [
 			{
@@ -208,12 +208,10 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
-		"lint": "eslint src --ext ts",
-		"watch": "tsc -watch -p ./",
-		"pretest": "npm run compile && npm run lint",
-		"test": "node ./out/test/runTest.js"
+		"vscode:prepublish": "webpack --mode production",
+		"webpack": "webpack --mode development",
+		"webpack-dev": "webpack --mode development --watch",
+		"test-compile": "tsc -p ./"
 	},
 	"dependencies": {
 		"autoprefixer": "^9.8.0",
@@ -234,8 +232,11 @@
 		"eslint": "^6.8.0",
 		"glob": "^7.1.6",
 		"mocha": "^7.2.0",
+		"ts-loader": "^7.0.5",
 		"typescript": "^3.9.3",
 		"uuid": "^8.1.0",
-		"vscode-test": "^1.3.0"
+		"vscode-test": "^1.3.0",
+		"webpack": "^4.43.0",
+		"webpack-cli": "^3.3.11"
 	}
 }
