@@ -8,12 +8,16 @@
 	},
 	"publisher": "kiennp",
 	"license": "MIT",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"homepage": "https://github.com/kiennp/web-assets-compiler#readme",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/kiennp/web-assets-compiler.git"
+		"url": "https://github.com/kiennp/web-assets-compiler"
 	},
+	"bugs": {
+		"url": "https://github.com/kiennp/web-assets-compiler/issues"
+	},
+	"icon": "icon.png",
 	"engines": {
 		"vscode": "^1.45.1"
 	},
